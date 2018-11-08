@@ -15,6 +15,7 @@ app.post('/todos', (req, res) => {
         text: req.body.text
     })
 
+    // save the todo to mongodb then return the document 
     todo.save().then((doc) => {
         res.send(doc)
     }, (e) => {
@@ -22,8 +23,16 @@ app.post('/todos', (req, res) => {
     })
 })
 
+app.get('/todos', (req, res) => {
+    Todo.find().then(todos => {
+        //sending back an object instead of array
+        res.send({todos})
+    }, (e)=>{
+        res.status(400).send(e)
+    })
+})
 
-
+// message to let you know the server has started
 app.listen(3000, () => {
     console.log('Started on port 3000')
 })
