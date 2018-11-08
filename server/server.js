@@ -23,6 +23,7 @@ app.post('/todos', (req, res) => {
     })
 })
 
+// GET todos route - returns all todos
 app.get('/todos', (req, res) => {
     Todo.find().then(todos => {
         //sending back an object instead of array
