@@ -12,7 +12,7 @@ const { User } = require('./../server/models/user')
 // }
 
 
-// Search by ID without creating an ObjectID - Mongoose feature
+// Search by ID without creating a new ObjectID - Mongoose feature
 // Todo.find({
 //     _id: id
 // }).then ((todos) => {
