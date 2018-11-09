@@ -42,7 +42,7 @@ app.get('/todos/:id', (req, res)=> {
        return res.status(404).send()
     }
     
-    // Find the doc by id and return if found else 404 - not found
+    // Find the doc by id and return if found, else 404 - not found
     Todo.findById(id).then(todo => {
         if(todo) {
             // sending it back as an object
@@ -51,6 +51,7 @@ app.get('/todos/:id', (req, res)=> {
             res.status(404).send('Not found')
         }
     })
+    // Error is the second argument
 }, e => {
     res.send(400)
 })
