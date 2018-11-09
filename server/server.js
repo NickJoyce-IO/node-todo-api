@@ -57,6 +57,24 @@ app.get('/todos/:id', (req, res)=> {
     res.send(400)
 })
 
+// DELETE /todos/:id - to remove a todo by its ID
+app.delete('/todos/:id', (req, res) => {
+    // Validate the Id
+    const id = req.params.id
+    if (!ObjectID.isValid(id)) {
+        return res.status(404).send()
+    }
+    // Find the doc by ID and remove, if no doc return 404
+    Todo.findByIdAndRemove(id).then(todo => {
+        if(todo) {
+            res.status(200).send({todo})
+        } else if (!todo){
+            res.status(404).send('Not found')
+        }
+    }, e=> {
+        res.status(400).send()
+    })
+})
 
 
 // message to let you know the server has started
