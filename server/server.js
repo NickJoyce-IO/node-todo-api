@@ -1,5 +1,6 @@
 const express = require('express')
 const bodyParser = require('body-parser')
+const { ObjectID } = require('mongodb')
 
 const { mongoose } = require('./db/mongoose')
 const { Todo } = require('./models/todo')
@@ -23,7 +24,7 @@ app.post('/todos', (req, res) => {
     })
 })
 
-// GET todos route - returns all todos
+// GET /todos route - returns all todos
 app.get('/todos', (req, res) => {
     Todo.find().then(todos => {
         //sending back an object instead of array
@@ -32,6 +33,29 @@ app.get('/todos', (req, res) => {
         res.status(400).send(e)
     })
 })
+
+// GET /todos/1234 - getting a todo by its ID
+app.get('/todos/:id', (req, res)=> {
+    const id = req.params.id
+    // Validator from mongoDB to validate whether ID is formed correctly
+    if (!ObjectID.isValid(id)) {
+       return res.status(404).send()
+    }
+    
+    // Find the doc by id and return if found else 404 - not found
+    Todo.findById(id).then(todo => {
+        if(todo) {
+            // sending it back as an object
+            res.send({todo})
+        } else if (!todo) {
+            res.status(404).send('Not found')
+        }
+    })
+}, e => {
+    res.send(400)
+})
+
+
 
 // message to let you know the server has started
 app.listen(3000, () => {
