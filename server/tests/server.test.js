@@ -11,7 +11,9 @@ const todos = [{
     text: 'first test todo'
 }, {
     _id: new ObjectID(),
-    text: 'second test todo'
+    text: 'second test todo',
+    completed: true,
+    completedAt: 333
 }]
 
 // insert the seed data
@@ -149,5 +151,37 @@ describe('DELETE /todos:/:id', () => {
             .delete('/todos/123abc')
             .expect(404)
             .end(done)
+    })
+})
+
+describe('PATCH /todos/:id', () => {
+    it('should update the todo', done => {
+        const hexId = todos[0]._id.toHexString()
+        const update = { text: 'changed text', completed: true }
+        request(app)
+            .patch(`/todos/${hexId}`)
+            .send(update)
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.todo.completed).toBe(true)
+                expect(res.body.todo.text).toBe('changed text')
+                expect(typeof res.body.todo.completedAt).toBe('number')
+            }).end(done)
+            
+        })
+           
+
+    it('should clear completedAt when todo is not completed', (done) => {
+        const hexId = todos[1]._id.toHexString()
+        const update = { text: 'changed text!!', completed: false }
+        request(app)
+            .patch(`/todos/${hexId}`)
+            .send(update)
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.todo.completed).toBe(false)
+                expect(res.body.todo.text).toBe('changed text!!')
+                expect(res.body.todo.completedAt).toBeFalsy()
+            }).end(done)
     })
 })
