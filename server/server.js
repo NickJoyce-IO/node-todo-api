@@ -1,6 +1,7 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const { ObjectID } = require('mongodb')
+const _ = require('lodash')
 
 const { mongoose } = require('./db/mongoose')
 const { Todo } = require('./models/todo')
@@ -72,6 +73,37 @@ app.delete('/todos/:id', (req, res) => {
             res.status(404).send('Not found')
         }
     }, e=> {
+        res.status(400).send()
+    })
+})
+
+//PATCH route for /todos/:id
+app.patch('/todos/:id', (req, res) => {
+    const id = req.params.id
+    // define only the fields that we want users to update
+    const body = _.pick(req.body, ['text', 'completed'])
+    console.log(body)
+    // validate the id
+    if (!ObjectID.isValid(id)) {
+        return res.status(404).send()
+    }
+
+    // if the completed field is a boolean and it is true, add the time
+    if (_.isBoolean(body.completed) && body.completed) {
+        body.completedAt = new Date().getTime()
+    } else {
+        body.completed = false
+        body.completedAt = null
+    }
+    console.log(body)
+
+    // find the objcet
+    Todo.findByIdAndUpdate(id, {$set: body}, {new: true}).then(todo => {
+        if (!todo) {
+            return res.status(404).send()
+        }
+        res.send({todo})
+    }).catch(e => {
         res.status(400).send()
     })
 })
