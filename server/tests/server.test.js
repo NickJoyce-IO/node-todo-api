@@ -84,7 +84,7 @@ describe('GET /todos', () => {
 
 // test the GET /todos:id route
 
-describe('GET /Todos/:id', () => {
+describe('GET /todos/:id', () => {
     it('should return todo doc', (done) => {
         request(app)
         .get(`/todos/${todos[0]._id.toHexString()}`)
@@ -108,5 +108,46 @@ describe('GET /Todos/:id', () => {
         .get('/todos/123abc')
         .expect(404)
         .end(done)
+    })
+})
+
+// Test the DELETE /todos/:id route by testing the deletion of one of the seed records
+
+describe('DELETE /todos:/:id', () => {
+    it('should remove a todo', (done) => {
+        const hexId = todos[1]._id.toHexString()
+        // when delete expect the delete to be a success and the return object to be the one request for delete
+        request(app)
+            .delete(`/todos/${hexId}`)
+            .expect(200)
+            .expect(res => {
+                expect(res.body.todo._id).toBe(hexId)
+            })
+            .end((err, res) => {
+                if(err) {
+                    return done(err)
+                }
+
+                // check that the record has been removed
+                Todo.findById(hexId).then(data => {
+                    expect(data).toBeFalsy()
+                    done()
+                }).catch((e) => done(e))
+            })
+    })
+
+    it('should return a 404 if todo not found', (done) => {
+        const testId = new ObjectID().toHexString
+        request(app)
+            .delete(`/todos/${testId}`)
+            .expect(404)
+            .end(done)
+    })
+
+    it('should return 404 if objectid is invalid', (done) => {
+        request(app)
+            .delete('/todos/123abc')
+            .expect(404)
+            .end(done)
     })
 })
