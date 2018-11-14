@@ -99,7 +99,7 @@ app.patch('/todos/:id', (req, res) => {
     }
     console.log(body)
 
-    // find the objcet
+    // find the object
     Todo.findByIdAndUpdate(id, {$set: body}, {new: true}).then(todo => {
         if (!todo) {
             return res.status(404).send()
@@ -110,6 +110,17 @@ app.patch('/todos/:id', (req, res) => {
     })
 })
 
+// POST /users
+app.post('/users', (req, res) => {
+    const body = _.pick(req.body, ['email', 'password'])
+    const user = new User(body)
+    user.save().then((user) => {
+        res.send(user)
+    }, (e) => {
+        res.status(400).send(e)
+    })
+
+})
 
 // message to let you know the server has started
 app.listen(port, () => {
