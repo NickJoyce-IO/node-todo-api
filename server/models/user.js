@@ -72,12 +72,16 @@ UserSchema.statics.findByToken = function (token) {
     })
 }
 
+// Mongoose middleware to hash the users password on save 
 UserSchema.pre('save', function (next) {
     const user = this
-
+    // ensure this only happens when the password record is modified
     if (user.isModified('password')) {
+        // create the salt
         bcrypt.genSalt(10, (err, salt) => {
+            // generate the hash using the password and the salt
             bcrypt.hash(user.password, salt, (err, hash) => {
+                // set the password to the has
                 user.password = hash
                 next()
             })
