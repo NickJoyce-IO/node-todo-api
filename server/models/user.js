@@ -54,6 +54,15 @@ UserSchema.methods.generateAuthToken = function () {
     })
 }
 
+UserSchema.methods.removeToken = function(token) {
+    const user = this
+   return user.update({
+        $pull: {
+            tokens: {token}
+        }
+    })
+}
+
 // model method because its searchinf through the model
 UserSchema.statics.findByToken = function (token) {
     const User = this
