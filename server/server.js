@@ -16,9 +16,10 @@ const port = process.env.PORT
 app.use(bodyParser.json())
 
 // POST todo route - takes text and creates a new record in the database
-app.post('/todos', (req, res) => {
+app.post('/todos', authenticate, (req, res) => {
     const todo = new Todo ({
-        text: req.body.text
+        text: req.body.text,
+        _creator: req.user._id
     })
 
     // save the todo to mongodb then return the document 
@@ -30,8 +31,10 @@ app.post('/todos', (req, res) => {
 })
 
 // GET /todos route - returns all todos
-app.get('/todos', (req, res) => {
-    Todo.find().then(todos => {
+app.get('/todos', authenticate, (req, res) => {
+    Todo.find({
+        _creator: req.user._id
+    }).then(todos => {
         //sending back an object instead of array
         res.send({todos})
     }, (e)=>{
@@ -40,7 +43,7 @@ app.get('/todos', (req, res) => {
 })
 
 // GET /todos/1234 - getting a todo by its ID
-app.get('/todos/:id', (req, res)=> {
+app.get('/todos/:id', authenticate, (req, res)=> {
     const id = req.params.id
     // Validator from mongoDB to validate whether ID is formed correctly
     if (!ObjectID.isValid(id)) {
@@ -48,7 +51,11 @@ app.get('/todos/:id', (req, res)=> {
     }
     
     // Find the doc by id and return if found, else 404 - not found
-    Todo.findById(id).then(todo => {
+    Todo.findOne({
+        _id: id,
+        _creator: req.user._id
+
+    }).then(todo => {
         if(todo) {
             // sending it back as an object
             res.send({todo})
@@ -62,14 +69,17 @@ app.get('/todos/:id', (req, res)=> {
 })
 
 // DELETE /todos/:id - to remove a todo by its ID
-app.delete('/todos/:id', (req, res) => {
+app.delete('/todos/:id', authenticate, (req, res) => {
     // Validate the Id
     const id = req.params.id
     if (!ObjectID.isValid(id)) {
         return res.status(404).send()
     }
     // Find the doc by ID and remove, if no doc return 404
-    Todo.findByIdAndRemove(id).then(todo => {
+    Todo.findOneAndRemove({
+        _id: id,
+        _creator: req.user._id
+    }).then(todo => {
         if(todo) {
             res.status(200).send({todo})
         } else if (!todo){
@@ -81,7 +91,7 @@ app.delete('/todos/:id', (req, res) => {
 })
 
 //PATCH route for /todos/:id
-app.patch('/todos/:id', (req, res) => {
+app.patch('/todos/:id', authenticate, (req, res) => {
     const id = req.params.id
     // define only the fields that we want users to update
     const body = _.pick(req.body, ['text', 'completed'])
@@ -101,7 +111,10 @@ app.patch('/todos/:id', (req, res) => {
     console.log(body)
 
     // find the object
-    Todo.findByIdAndUpdate(id, {$set: body}, {new: true}).then(todo => {
+    Todo.findOneAndUpdate({
+        _id: id,
+        _creator: req.user._id
+    }, {$set: body}, {new: true}).then(todo => {
         if (!todo) {
             return res.status(404).send()
         }
